@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema({
   }
 });
 
-// Plugin pour valider l'unicité avec un message personnalisé
+
 userSchema.plugin(uniqueValidator, { message: 'Erreur, {PATH} doit être unique.' });
 
 module.exports = mongoose.model('User', userSchema);

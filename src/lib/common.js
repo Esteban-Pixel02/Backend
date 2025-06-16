@@ -166,6 +166,7 @@ export async function updateBook(data, id) {
     newData = { ...book };
   }
 
+  console.log('Token envoyé:', localStorage.getItem('token'));
   try {
     const newBook = await axios({
       method: 'put',
