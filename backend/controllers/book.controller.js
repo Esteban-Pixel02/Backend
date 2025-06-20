@@ -47,7 +47,7 @@ exports.updateBook = async (req, res, next) => {
     }
 
     
-    await Book.updateOne({ _id: bookId }, { ...bookObject, _id: bookId });
+    await Book.updateOne({ _id: bookId },bookObject );
 
     res.status(200).json({ message: 'Livre mis à jour !' });
   } catch (error) {
@@ -109,3 +109,51 @@ exports.deleteBook = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur lors de la suppression' });
   }
 };
+
+exports.rateBook = async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const { userId, rating } = req.body;
+
+    if (rating < 0 || rating > 5) {
+      return res.status(400).json({ message: 'La note doit être comprise entre 0 et 5' });
+    }
+
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Livre non trouvé' });
+    }
+
+    const hasRated = book.ratings.some(r => r.userId === userId);
+    if (hasRated) {
+      return res.status(403).json({ message: 'Vous avez déjà noté ce livre' });
+    }
+
+    book.ratings.push({ userId, grade: rating });
+
+    const total = book.ratings.reduce((sum, r) => sum + r.grade, 0);
+    book.averageRating = total / book.ratings.length;
+
+    await book.save();
+    res.status(200).json(book);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors de la notation' });
+  }
+};
+
+
+exports.getBestRatedBooks = async (req, res) => {
+  try {
+    console.log('getBestRatedBooks appelé');
+    const books = await Book.find({ averageRating: { $ne: null } })
+      .sort({ averageRating: -1 })
+      .limit(3);
+    console.log('Livres trouvés:', books.length);
+    res.status(200).json(books);
+  } catch (error) {
+    console.error('Erreur getBestRatedBooks:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+

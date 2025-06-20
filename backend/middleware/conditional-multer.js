@@ -1,4 +1,4 @@
-// middleware/conditional-multer.js
+
 const multer = require('./multer-config'); // ton multer config existante
 
 module.exports = (req, res, next) => {
